@@ -40,26 +40,26 @@ bar. Un toggle surte efecto en el próximo intervalo de refresco de la entrada.
 
 El plugin no modifica la configuración de herdr por vos. Configuración manual:
 
-1. Linkear el directorio del plugin (ajustar la ruta al directorio clonado del repo):
+1. Instalar desde GitHub (ajustar `owner` si corresponde):
 
    ```sh
-   herdr plugin link /ruta/absoluta/a/herdr-hardware-usage
+   herdr plugin install terra/herdr-hardware-usage
    ```
 
-2. Hacer ejecutable el script de status:
+2. Obtener la ruta absoluta que herdr le asignó al checkout administrado, sin
+   adivinarla:
 
    ```sh
-   chmod +x /ruta/absoluta/a/herdr-hardware-usage/status.js
+   herdr plugin action invoke terra.hardware-usage.status | tail -1
+   # → Tab bar command: /ruta/xd/status.js
    ```
 
-3. Agregar una entrada de tipo `command` a `ui.tab_bar_right` en tu
-   `config.toml` de herdr, reemplazando el placeholder por la ruta absoluta
-   real a `status.js`:
+3. Usar esa ruta en la entrada de tipo `command` de `ui.tab_bar_right` en tu
+   `config.toml` de herdr:
 
    ```toml
-   [ui]
-   tab_bar_right = [
-     { type = "command", command = "/ruta/absoluta/a/herdr-hardware-usage/status.js", interval_seconds = 5, timeout_seconds = 2 },
+   ui.tab_bar_right = [
+     { type = "command", command = "/ruta/xd/status.js", interval_seconds = 5, timeout_seconds = 2 },
    ]
    ```
 
@@ -76,10 +76,10 @@ Las acciones se invocan a través de herdr y surten efecto en el próximo
 intervalo de refresco (`interval_seconds` de arriba):
 
 ```sh
-herdr plugin action invoke local.hardware-usage.toggle-cpu
-herdr plugin action invoke local.hardware-usage.toggle-ram
-herdr plugin action invoke local.hardware-usage.toggle-disk
-herdr plugin action invoke local.hardware-usage.status
+herdr plugin action invoke terra.hardware-usage.toggle-cpu
+herdr plugin action invoke terra.hardware-usage.toggle-ram
+herdr plugin action invoke terra.hardware-usage.toggle-disk
+herdr plugin action invoke terra.hardware-usage.status
 ```
 
 También se puede invocar directamente durante el desarrollo:
@@ -97,10 +97,16 @@ pueden vivir solo dentro del checkout: la configuración canónica queda en el
 config dir del plugin y el hook de arranque vuelve a aplicar los ajustes
 persistidos sobre la copia de trabajo apenas arranca el server de herdr.
 
+## Publicación en el marketplace
+
+Para listar el plugin, agregá el topic `herdr-plugin` al repositorio de GitHub
+(el manifiesto ya está en la raíz). No hace falta ningún otro paso de
+publicación.
+
 ## Notas
 
 - La configuración canónica vive en el **config dir del plugin**
-  (`herdr plugin config-dir local.hardware-usage` imprime la ruta; normalmente
+  (`herdr plugin config-dir terra.hardware-usage` imprime la ruta; normalmente
   `$HERDR_PLUGIN_CONFIG_DIR/config.json`). herdr conserva ese directorio entre
   reinstalaciones y actualizaciones, así que los ajustes sobreviven. Se crea
   con defaults en la primera corrida: todas las métricas activadas, disco en

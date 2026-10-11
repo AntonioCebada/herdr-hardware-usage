@@ -29,6 +29,7 @@ const {
 } = require('./lib/settings.js');
 
 const CHECKOUT_PATH = path.join(__dirname, 'config.json');
+const PLUGIN_ROOT = process.env.HERDR_PLUGIN_ROOT;
 const PLUGIN_CONFIG_DIR = process.env.HERDR_PLUGIN_CONFIG_DIR;
 const PERSISTENT_PATH = PLUGIN_CONFIG_DIR
   ? path.join(PLUGIN_CONFIG_DIR, 'config.json')
@@ -70,6 +71,9 @@ function showStatus() {
   } else {
     process.stdout.write('Config mode: checkout-only\n');
   }
+  process.stdout.write(
+    `Tab bar command: ${path.join(PLUGIN_ROOT || __dirname, 'status.js')}\n`,
+  );
 }
 
 const actions = {

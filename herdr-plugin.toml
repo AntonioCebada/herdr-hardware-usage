@@ -1,8 +1,8 @@
-id = "local.hardware-usage"
+id = "terra.hardware-usage"
 name = "Hardware Usage"
-version = "0.2.0"
+version = "0.3.0"
 min_herdr_version = "0.7.0"
-description = "CPU/RAM/disk usage shown through a ui.tab_bar_right command entry"
+description = "CPU/RAM/disk usage in the herdr tab bar via a ui.tab_bar_right command entry; settings survive installs"
 platforms = ["linux"]
 
 [[startup]]
