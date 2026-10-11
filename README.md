@@ -60,7 +60,8 @@ El plugin no modifica la configuración de herdr por vos. Configuración manual:
    `config.toml` de herdr:
 
    ```toml
-   ui.tab_bar_right = [
+   [ui]
+   tab_bar_right = [
      { type = "command", command = "/ruta/xd/status.js", interval_seconds = 5, timeout_seconds = 2 },
    ]
    ```
