@@ -89,6 +89,24 @@ node actions.js toggle-cpu   # imprime: CPU metric disabled
 node actions.js status       # imprime la configuración actual
 ```
 
+## Desarrollo local (link)
+
+Para contribuir o probar sin publicar, linkeá el directorio del repo en lugar
+de instalar:
+
+```sh
+herdr plugin link /ruta/absoluta/a/este/repo
+```
+
+Con `link`, herdr apunta a tu working tree: editás el código y no reinstalás
+nada. El modo de configuración es `checkout-only` (no hay checkout administrado
+ni reemplazos de herdr). Los tests corren con la suite built-in de Node:
+
+```sh
+node --test
+test/settings.test.js test/collect.test.js
+```
+
 ## Desarrollo con install
 
 Cuando el plugin se instala desde GitHub, herdr administra el checkout y lo
@@ -96,6 +114,9 @@ Cuando el plugin se instala desde GitHub, herdr administra el checkout y lo
 pueden vivir solo dentro del checkout: la configuración canónica queda en el
 config dir del plugin y el hook de arranque vuelve a aplicar los ajustes
 persistidos sobre la copia de trabajo apenas arranca el server de herdr.
+
+Versión mínima de herdr: `0.7.0` (según `min_herdr_version`); probado con herdr
+`0.9.3` (donde `ui.tab_bar_right` admite entradas `command`).
 
 ## Publicación en el marketplace
 
