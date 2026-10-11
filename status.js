@@ -127,16 +127,15 @@ function collectCpuPercent() {
   return cpuPercent(current, second);
 }
 
-function collectRamPercent() {
-  const text = fs.readFileSync('/proc/meminfo', 'utf8');
-  const mem = parseMeminfo(text);
-  return mem ? mem.usedPercent : null;
-}
-
 function collectDiskPercent(diskPath) {
   const statfs = fs.statfsSync(diskPath);
   const usage = statfsUsage(statfs);
   return usage ? usage.usedPercent : null;
+}
+
+function collectRam() {
+  const text = fs.readFileSync('/proc/meminfo', 'utf8');
+  return parseMeminfo(text);
 }
 
 function buildParts(config) {
@@ -144,17 +143,21 @@ function buildParts(config) {
 
   if (config.cpu) {
     const percent = collectCpuPercent();
-    if (percent !== null) parts.push({ label: 'CPU', percent });
+    if (percent !== null) parts.push({ text: `CPU ${Math.round(percent)}%` });
   }
 
   if (config.ram) {
-    const percent = collectRamPercent();
-    if (percent !== null) parts.push({ label: 'RAM', percent });
+    const mem = collectRam();
+    if (mem !== null) {
+      parts.push({
+        text: `RAM ${mem.usedGb.toFixed(1)}/${Math.round(mem.totalGb)}GB`,
+      });
+    }
   }
 
   if (config.disk) {
     const percent = collectDiskPercent(config.disk_path);
-    if (percent !== null) parts.push({ label: `DISK ${config.disk_path}`, percent });
+    if (percent !== null) parts.push({ text: `DISK ${Math.round(percent)}%` });
   }
 
   return parts;

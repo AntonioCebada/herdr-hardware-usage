@@ -8,8 +8,10 @@ Como el comando colector corre en el **server** de herdr, al usar
 (el host remoto), no las del cliente local.
 
 - **CPU** — porcentaje de uso calculado a partir de dos muestras de `/proc/stat`.
-- **RAM** — porcentaje de uso desde `/proc/meminfo` (`MemTotal` − `MemAvailable`).
-- **DISK** — porcentaje de uso desde `fs.statfsSync(disk_path)`.
+- **RAM** — GB usados / límite total en GB **decimal** desde `/proc/meminfo`
+  (`MemTotal` − `MemAvailable`), por ejemplo `RAM 2.8/16GB` (así un módulo de
+  16 GB del fabricante se muestra como 16GB, no 15 GiB).
+- **DISK** — porcentaje de uso desde `fs.statfsSync(disk_path)` (sin mostrar la ruta).
 
 La métrica de GPU queda fuera del alcance de la v1 a propósito; puede agregarse más adelante.
 
@@ -25,7 +27,7 @@ entrada si el comando falla, no imprime nada o se pasa del timeout.
 - Imprime exactamente una línea, por ejemplo:
 
   ```text
-  CPU 12% · RAM 60% · DISK / 62%
+  CPU 12% · RAM 2.8/16GB · DISK 62%
   ```
 
 - Ante cualquier error no imprime nada y sale con código 0, así herdr limpia
@@ -55,7 +57,8 @@ El plugin no modifica la configuración de herdr por vos. Configuración manual:
    real a `status.js`:
 
    ```toml
-   ui.tab_bar_right = [
+   [ui]
+   tab_bar_right = [
      { type = "command", command = "/ruta/absoluta/a/herdr-hardware-usage/status.js", interval_seconds = 5, timeout_seconds = 2 },
    ]
    ```
@@ -96,5 +99,7 @@ node actions.js status       # imprime la configuración actual
   lee `/proc/stat` dos veces (~250 ms de diferencia) y guarda una muestra en
   `.state.json`; las corridas siguientes reutilizan la muestra guardada.
   Ambos archivos están ignorados por git.
+- La RAM se muestra en GB decimal (kB × 1024 / 1e9) para coincidir con la
+  capacidad nominal del fabricante.
 - Solo Linux (`platforms = ["linux"]`), porque lee procfs.
 - El soporte de GPU puede agregarse en una versión futura.

@@ -26,4 +26,10 @@ con selección de qué métricas mostrar (accions toggle).
 
 ## Evidencia
 
-- (pendiente)
+- Commit: `0e140c2 feat: add hardware-usage plugin v1 (CPU/RAM/disk tab bar metrics)` en rama `feat/hardware-usage-plugin`.
+- TDD: RED observado (`Cannot find module '../lib/collect.js'`) → GREEN 12/12 (`node --test test/collect.test.js`).
+- Funcional: `./status.js` × 2 → `CPU 3% · RAM 17% · DISK / 17%`; toggles cpu/ram verificados; error path → stdout vacío exit 0.
+- Verificación de sintaxis de tests: usar `node --test` o `node --test test/collect.test.js` (Node v24 no acepta directorio posicional).
+- Pendiente del usuario: `herdr plugin link` + snippet `ui.tab_bar_right` (restricción explícita: no lo hace el agente).
+- v1 feedback (commit posterior): RAM → `RAM 2.8/16GB` (usado/límite, GB decimal kB×1024/1e9 para coincidir con la capacidad nominal); DISK → `DISK 17%` sin mostrar la ruta. renderLine ahora recibe texto pre-renderizado por métrica. Tests 13/13 verdes.
+- El usuario confirmó por chat que linkeó y configuró el plugin, y funciona.
