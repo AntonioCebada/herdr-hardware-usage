@@ -1,74 +1,76 @@
-# Hardware Usage (herdr plugin)
+# Hardware Usage (plugin de herdr)
 
-Shows CPU, RAM, and disk usage percentages on the right side of the herdr tab
-bar, with per-metric toggles.
+Muestra el porcentaje de uso de CPU, RAM y disco en el lado derecho de la tab
+bar de herdr, con toggles por métrica (elegir cuáles mostrar y cuáles no).
 
-Because the collecting command runs on the herdr **server**, `herdr --remote`
-shows the stats of the machine running the server (the remote host), not the
-local client.
+Como el comando colector corre en el **server** de herdr, al usar
+`herdr --remote` se muestran las métricas de la máquina donde corre el server
+(el host remoto), no las del cliente local.
 
-- **CPU** — busy percentage derived from two `/proc/stat` samples.
-- **RAM** — used percentage from `/proc/meminfo` (`MemTotal` − `MemAvailable`).
-- **DISK** — used percentage from `fs.statfsSync(disk_path)`.
+- **CPU** — porcentaje de uso calculado a partir de dos muestras de `/proc/stat`.
+- **RAM** — porcentaje de uso desde `/proc/meminfo` (`MemTotal` − `MemAvailable`).
+- **DISK** — porcentaje de uso desde `fs.statfsSync(disk_path)`.
 
-GPU metrics are intentionally out of scope for v1; they may be added later.
+La métrica de GPU queda fuera del alcance de la v1 a propósito; puede agregarse más adelante.
 
-## How it fits herdr
+## Cómo se integra con herdr
 
-This plugin does **not** draw on the tab bar itself. herdr renders the **last
-line of stdout** of a `ui.tab_bar_right` command entry, and clears the entry if
-the command fails, prints nothing, or times out. `status.js` is that command:
+Este plugin **no dibuja** sobre la tab bar. herdr renderiza la **última línea
+de stdout** de una entrada de tipo `command` en `ui.tab_bar_right`, y limpia la
+entrada si el comando falla, no imprime nada o se pasa del timeout.
+`status.js` es ese comando:
 
-- It resolves its own location from `__dirname`, because a tab bar command does
-  **not** receive any `HERDR_PLUGIN_*` environment variables.
-- It prints exactly one line, for example:
+- Resuelve su propia ubicación con `__dirname`, porque un comando de la tab bar
+  **no** recibe ninguna variable de entorno `HERDR_PLUGIN_*`.
+- Imprime exactamente una línea, por ejemplo:
 
   ```text
   CPU 12% · RAM 60% · DISK / 62%
   ```
 
-- On any error it prints nothing and exits 0, so herdr clears the entry instead
-  of showing an error.
+- Ante cualquier error no imprime nada y sale con código 0, así herdr limpia
+  la entrada en lugar de mostrar un error.
 
-The plugin's `actions` only edit `config.json`; they do not touch the tab bar.
-A toggle takes effect on the next refresh interval of the tab bar entry.
+Las acciones (`actions`) del plugin solo editan `config.json`; no tocan la tab
+bar. Un toggle surte efecto en el próximo intervalo de refresco de la entrada.
 
-## Manual install
+## Instalación manual
 
-The plugin does not modify your herdr configuration for you. Set it up manually:
+El plugin no modifica la configuración de herdr por vos. Configuración manual:
 
-1. Link the plugin directory (adjust the path to where you cloned this repo):
-
-   ```sh
-   herdr plugin link /absolute/path/to/herdr-hardware-usage
-   ```
-
-2. Make the status script executable:
+1. Linkear el directorio del plugin (ajustar la ruta al directorio clonado del repo):
 
    ```sh
-   chmod +x /absolute/path/to/herdr-hardware-usage/status.js
+   herdr plugin link /ruta/absoluta/a/herdr-hardware-usage
    ```
 
-3. Add a command entry to `ui.tab_bar_right` in your herdr `config.toml`,
-   replacing the placeholder with the real absolute path to `status.js`:
+2. Hacer ejecutable el script de status:
+
+   ```sh
+   chmod +x /ruta/absoluta/a/herdr-hardware-usage/status.js
+   ```
+
+3. Agregar una entrada de tipo `command` a `ui.tab_bar_right` en tu
+   `config.toml` de herdr, reemplazando el placeholder por la ruta absoluta
+   real a `status.js`:
 
    ```toml
    ui.tab_bar_right = [
-     { type = "command", command = "/absolute/path/to/herdr-hardware-usage/status.js", interval_seconds = 5, timeout_seconds = 2 },
+     { type = "command", command = "/ruta/absoluta/a/herdr-hardware-usage/status.js", interval_seconds = 5, timeout_seconds = 2 },
    ]
    ```
 
-4. Validate and reload:
+4. Validar y recargar:
 
    ```sh
    herdr config check
    herdr server reload-config
    ```
 
-## Switching metrics
+## Eligiendo métricas
 
-Actions are invoked through herdr and take effect on the next refresh interval
-(`interval_seconds` above):
+Las acciones se invocan a través de herdr y surten efecto en el próximo
+intervalo de refresco (`interval_seconds` de arriba):
 
 ```sh
 herdr plugin action invoke local.hardware-usage.toggle-cpu
@@ -77,20 +79,22 @@ herdr plugin action invoke local.hardware-usage.toggle-disk
 herdr plugin action invoke local.hardware-usage.status
 ```
 
-You can also run the actions directly while developing:
+También se puede invocar directamente durante el desarrollo:
 
 ```sh
-node actions.js toggle-cpu   # prints: CPU metric disabled
-node actions.js status       # prints the current configuration
+node actions.js toggle-cpu   # imprime: CPU metric disabled
+node actions.js status       # imprime la configuración actual
 ```
 
-## Notes
+## Notas
 
-- Configuration lives in `config.json` next to the script (created with defaults
-  on first run: all metrics enabled, disk path `/`). It is user state and is
-  git-ignored. Edit it to change `disk_path` to another mount point.
-- CPU needs two samples. The first run after a restart samples `/proc/stat`
-  twice (~250 ms apart) and stores a sample in `.state.json`; later runs reuse
-  the stored sample. Both files are git-ignored.
-- Linux only (`platforms = ["linux"]`), as it reads procfs.
-- GPU support may be added in a future version.
+- La configuración vive en `config.json` junto al script (se crea con
+  defaults en la primera corrida: todas las métricas activadas, disco en la
+  ruta `/`). Es estado del usuario y está ignorado por git. Editar ese
+  archivo para cambiar `disk_path` a otro punto de montaje.
+- La CPU necesita dos muestras. La primera corrida después de un restart
+  lee `/proc/stat` dos veces (~250 ms de diferencia) y guarda una muestra en
+  `.state.json`; las corridas siguientes reutilizan la muestra guardada.
+  Ambos archivos están ignorados por git.
+- Solo Linux (`platforms = ["linux"]`), porque lee procfs.
+- El soporte de GPU puede agregarse en una versión futura.
