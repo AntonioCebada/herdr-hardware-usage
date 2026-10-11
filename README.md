@@ -43,7 +43,7 @@ El plugin no modifica la configuración de herdr por vos. Configuración manual:
 1. Instalar desde GitHub (ajustar `owner` si corresponde):
 
    ```sh
-   herdr plugin install terra/herdr-hardware-usage
+   herdr plugin install AntonioCebada/herdr-hardware-usage
    ```
 
 2. Obtener la ruta absoluta que herdr le asignó al checkout administrado, sin
