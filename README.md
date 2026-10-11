@@ -47,11 +47,13 @@ El plugin no modifica la configuración de herdr por vos. Configuración manual:
    ```
 
 2. Obtener la ruta absoluta que herdr le asignó al checkout administrado, sin
-   adivinarla:
+   adivinarla (las acciones invocadas por CLI dejan su stdout en el log de
+   comandos del plugin):
 
    ```sh
-   herdr plugin action invoke terra.hardware-usage.status | tail -1
-   # → Tab bar command: /ruta/xd/status.js
+   herdr plugin log list --plugin terra.hardware-usage \
+     | grep -o 'Tab bar command: [^"\\\\]*' | tail -1
+   # → Tab bar command: ~/.config/herdr/plugins/github/terra.hardware-usage-<hash>/status.js
    ```
 
 3. Usar esa ruta en la entrada de tipo `command` de `ui.tab_bar_right` en tu
