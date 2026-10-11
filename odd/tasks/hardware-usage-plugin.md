@@ -33,3 +33,4 @@ con selección de qué métricas mostrar (accions toggle).
 - Pendiente del usuario: `herdr plugin link` + snippet `ui.tab_bar_right` (restricción explícita: no lo hace el agente).
 - v1 feedback (commit posterior): RAM → `RAM 2.8/16GB` (usado/límite, GB decimal kB×1024/1e9 para coincidir con la capacidad nominal); DISK → `DISK 17%` sin mostrar la ruta. renderLine ahora recibe texto pre-renderizado por métrica. Tests 13/13 verdes.
 - El usuario confirmó por chat que linkeó y configuró el plugin, y funciona.
+- v0.2.0 (commit 20301f6): configuración persistente — canonica en HERDR_PLUGIN_CONFIG_DIR/config.json (sobrevive install/update desde GitHub), startup.js re-sincroniza al checkout al iniciar el server, toggles escriben ambos sitios. lib/settings.js con tests; 29/29 verdes. Emita solo workflow convention, no environment inline artгefacts.
