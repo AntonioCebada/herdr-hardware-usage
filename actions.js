@@ -9,40 +9,50 @@
 //   node actions.js toggle-disk
 //   node actions.js status
 //
-// Actions only read and write config.json next to this script. status.js reads
-// the same file, so a toggle takes effect on the next tab bar refresh.
+// Settings are canonical in `${HERDR_PLUGIN_CONFIG_DIR}/config.json`, which
+// herdr persists across install/update, and mirrored into `config.json` next
+// to this script because that is the copy status.js reads (a tab bar command
+// receives no HERDR_PLUGIN_* env). A toggle therefore takes effect on the next
+// tab bar refresh.
+//
+// When run directly with plain Node outside herdr (development), the env var
+// is absent and only the checkout copy is read and written.
 
 const fs = require('node:fs');
 const path = require('node:path');
 
-const CONFIG_PATH = path.join(__dirname, 'config.json');
-const DEFAULT_CONFIG = { cpu: true, ram: true, disk: true, disk_path: '/' };
+const {
+  DEFAULT_CONFIG,
+  configSummaryText,
+  mergeWriteTargets,
+  resolveConfig,
+} = require('./lib/settings.js');
+
+const CHECKOUT_PATH = path.join(__dirname, 'config.json');
+const PLUGIN_CONFIG_DIR = process.env.HERDR_PLUGIN_CONFIG_DIR;
+const PERSISTENT_PATH = PLUGIN_CONFIG_DIR
+  ? path.join(PLUGIN_CONFIG_DIR, 'config.json')
+  : null;
 
 const LABELS = { cpu: 'CPU', ram: 'RAM', disk: 'DISK' };
 
-function coerceConfig(raw) {
-  const source = raw && typeof raw === 'object' ? raw : {};
-  return {
-    cpu: !!source.cpu,
-    ram: !!source.ram,
-    disk: !!source.disk,
-    disk_path:
-      typeof source.disk_path === 'string' && source.disk_path.length > 0
-        ? source.disk_path
-        : DEFAULT_CONFIG.disk_path,
-  };
-}
-
 function loadConfig() {
-  try {
-    return coerceConfig(JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')));
-  } catch {
-    return { ...DEFAULT_CONFIG };
-  }
+  return resolveConfig({
+    persistentPath: PERSISTENT_PATH,
+    checkoutPath: CHECKOUT_PATH,
+    defaults: DEFAULT_CONFIG,
+  });
 }
 
 function saveConfig(config) {
-  fs.writeFileSync(CONFIG_PATH, `${JSON.stringify(config, null, 2)}\n`);
+  for (const target of mergeWriteTargets({
+    persistentPath: PERSISTENT_PATH,
+    checkoutPath: CHECKOUT_PATH,
+    config,
+  })) {
+    fs.mkdirSync(path.dirname(target.path), { recursive: true });
+    fs.writeFileSync(target.path, target.json);
+  }
 }
 
 function toggle(key) {
@@ -53,15 +63,13 @@ function toggle(key) {
 }
 
 function showStatus() {
-  const config = loadConfig();
-  const state = (value) => (value ? 'enabled' : 'disabled');
-  const lines = [
-    `CPU metric: ${state(config.cpu)}`,
-    `RAM metric: ${state(config.ram)}`,
-    `DISK metric: ${state(config.disk)}`,
-    `Disk path: ${config.disk_path}`,
-  ];
-  process.stdout.write(`${lines.join('\n')}\n`);
+  process.stdout.write(`${configSummaryText(loadConfig())}\n`);
+  if (PERSISTENT_PATH) {
+    process.stdout.write(`Config dir: ${PLUGIN_CONFIG_DIR}\n`);
+    process.stdout.write('Config mode: persistent\n');
+  } else {
+    process.stdout.write('Config mode: checkout-only\n');
+  }
 }
 
 const actions = {

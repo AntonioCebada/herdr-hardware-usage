@@ -89,12 +89,31 @@ node actions.js toggle-cpu   # imprime: CPU metric disabled
 node actions.js status       # imprime la configuración actual
 ```
 
+## Desarrollo con install
+
+Cuando el plugin se instala desde GitHub, herdr administra el checkout y lo
+**reemplaza** en cada reinstalación o actualización. Por eso los ajustes no
+pueden vivir solo dentro del checkout: la configuración canónica queda en el
+config dir del plugin y el hook de arranque vuelve a aplicar los ajustes
+persistidos sobre la copia de trabajo apenas arranca el server de herdr.
+
 ## Notas
 
-- La configuración vive en `config.json` junto al script (se crea con
-  defaults en la primera corrida: todas las métricas activadas, disco en la
-  ruta `/`). Es estado del usuario y está ignorado por git. Editar ese
-  archivo para cambiar `disk_path` a otro punto de montaje.
+- La configuración canónica vive en el **config dir del plugin**
+  (`herdr plugin config-dir local.hardware-usage` imprime la ruta; normalmente
+  `$HERDR_PLUGIN_CONFIG_DIR/config.json`). herdr conserva ese directorio entre
+  reinstalaciones y actualizaciones, así que los ajustes sobreviven. Se crea
+  con defaults en la primera corrida: todas las métricas activadas, disco en
+  la ruta `/`.
+- Junto al script queda una **copia de trabajo** de `config.json`, que es la
+  que lee `status.js` (un comando de la tab bar no recibe env del plugin). El
+  hook de arranque (`[[startup]]` en `herdr-plugin.toml`) sincroniza la
+  configuración canónica hacia esa copia cuando arranca el server de herdr, y
+  los toggles escriben ambos sitios, así que el cambio surte efecto en el
+  próximo refresco.
+- `config.json` es estado del usuario y está ignorado por git. Editarlo (en
+  cualquiera de los dos sitios) para cambiar `disk_path` a otro punto de
+  montaje.
 - La CPU necesita dos muestras. La primera corrida después de un restart
   lee `/proc/stat` dos veces (~250 ms de diferencia) y guarda una muestra en
   `.state.json`; las corridas siguientes reutilizan la muestra guardada.
