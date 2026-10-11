@@ -1,0 +1,6 @@
+# User state written next to the scripts at runtime.
+config.json
+.state.json
+
+# OS noise.
+.DS_Store

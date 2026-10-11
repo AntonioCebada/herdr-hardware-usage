@@ -1,0 +1,30 @@
+id = "local.hardware-usage"
+name = "Hardware Usage"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "CPU/RAM/disk usage shown through a ui.tab_bar_right command entry"
+platforms = ["linux"]
+
+[[actions]]
+id = "toggle-cpu"
+title = "Toggle CPU metric"
+contexts = ["workspace"]
+command = ["node", "actions.js", "toggle-cpu"]
+
+[[actions]]
+id = "toggle-ram"
+title = "Toggle RAM metric"
+contexts = ["workspace"]
+command = ["node", "actions.js", "toggle-ram"]
+
+[[actions]]
+id = "toggle-disk"
+title = "Toggle DISK metric"
+contexts = ["workspace"]
+command = ["node", "actions.js", "toggle-disk"]
+
+[[actions]]
+id = "status"
+title = "Show current metric config"
+contexts = ["workspace"]
+command = ["node", "actions.js", "status"]
